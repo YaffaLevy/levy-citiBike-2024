@@ -16,9 +16,9 @@ public class StationInformation {
         public double lat;
         public double lon;
 
-        public Station(String station_id, String name, double lat, double lon) {
+        public Station(String stationId, String name, double lat, double lon) {
             //CHECKSTYLE:ON
-            this.station_id = station_id;
+            this.station_id = stationId;
             this.name = name;
             this.lat = lat;
             this.lon = lon;
