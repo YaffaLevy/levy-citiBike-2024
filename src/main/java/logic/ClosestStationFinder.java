@@ -6,8 +6,8 @@ import java.util.Comparator;
 
 public class ClosestStationFinder {
 
-    public StationInformation.Station findClosestStationWithBikes(double userLat,
-                                                                  double userLon, StationInformation stationInfo, StationStatus stationStatus) {
+    public StationInformation.Station findClosestStationWithBikes(double userLat, double userLon, StationInformation
+                                                                          stationInfo, StationStatus stationStatus) {
         return stationInfo.data.stations.stream()
                 //our stream is like a conveyor belt going through each thing in the list
                 .filter(station -> hasAvailableBikes(station.station_id, stationStatus))
@@ -19,8 +19,8 @@ public class ClosestStationFinder {
     }
 
 
-    public StationInformation.Station findClosestStationWithDocks(double userLat,
-                                                                  double userLon, StationInformation stationInfo, StationStatus stationStatus) {
+    public StationInformation.Station findClosestStationWithDocks(double userLat, double userLon, StationInformation
+                                                                          stationInfo, StationStatus stationStatus) {
         return stationInfo.data.stations.stream()
                 .filter(station -> hasAvailableDocks(station.station_id, stationStatus))
                 .min(Comparator.comparingDouble(station ->
