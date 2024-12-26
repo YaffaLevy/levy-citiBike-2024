@@ -16,10 +16,10 @@ public class StationStatus {
         public int num_docks_available;
 
         public Status(String station_id, int num_bikes_available, int num_docks_available) {
+            //CHECKSTYLE:ON
             this.station_id = station_id;
             this.num_bikes_available = num_bikes_available;
             this.num_docks_available = num_docks_available;
-            //CHECKSTYLE:ON
         }
     }
 }

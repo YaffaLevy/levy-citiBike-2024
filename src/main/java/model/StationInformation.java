@@ -17,11 +17,12 @@ public class StationInformation {
         public double lon;
 
         public Station(String station_id, String name, double lat, double lon) {
+            //CHECKSTYLE:ON
             this.station_id = station_id;
             this.name = name;
             this.lat = lat;
             this.lon = lon;
-            //CHECKSTYLE:ON
+
         }
     }
 }
