@@ -12,7 +12,6 @@ public class StationInformation {
     public static class Station {
         //CHECKSTYLE:OFF
         public String station_id;
-        //CHECKSTYLE:ON
         public String name;
         public double lat;
         public double lon;
@@ -22,6 +21,7 @@ public class StationInformation {
             this.name = name;
             this.lat = lat;
             this.lon = lon;
+            //CHECKSTYLE:ON
         }
     }
 }
