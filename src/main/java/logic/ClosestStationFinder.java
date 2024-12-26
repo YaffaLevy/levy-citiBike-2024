@@ -12,8 +12,8 @@ public class ClosestStationFinder {
                 //our stream is like a coveyor belt going through each thing in the list
                 .filter(station -> hasAvailableBikes(station.station_id, stationStatus))
                 //the filter is filetring through the stations asseisng the station status
-                .min(Comparator.comparingDouble
-                        (station -> GeoCalculations.haversine(userLat, userLon, station.lat, station.lon)))
+                .min(Comparator.comparingDouble(station ->
+                        GeoCalculations.haversine(userLat, userLon, station.lat, station.lon)))
                 //min is comparing the users location and the station location to find the closest
                 .orElseThrow(() -> new RuntimeException("No station with available bikes found."));
     }
@@ -23,8 +23,8 @@ public class ClosestStationFinder {
             (double userLat, double userLon, StationInformation stationInfo, StationStatus stationStatus) {
         return stationInfo.data.stations.stream()
                 .filter(station -> hasAvailableDocks(station.station_id, stationStatus))
-                .min(Comparator.comparingDouble
-                        (station -> GeoCalculations.haversine(userLat, userLon, station.lat, station.lon)))
+                .min(Comparator.comparingDouble(station ->
+                        GeoCalculations.haversine(userLat, userLon, station.lat, station.lon)))
                 .orElseThrow(() -> new RuntimeException("No station with available docks found."));
     }
 
