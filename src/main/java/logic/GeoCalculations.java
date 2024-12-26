@@ -1,11 +1,8 @@
 package logic;
 
 public class GeoCalculations {
-    private final double earthRadiusKm;
 
-    public GeoCalculations() {
-        this.earthRadiusKm = 6371.0; // Earth's approximate radius in kilometers
-    }
+    private static final double earthRadiusKm = 6371.0;
 
     public double haversine(double lat1, double lon1, double lat2, double lon2) {
         double dLat = Math.toRadians(lat2 - lat1);
