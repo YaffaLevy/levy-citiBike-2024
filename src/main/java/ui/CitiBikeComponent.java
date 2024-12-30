@@ -1,4 +1,4 @@
-package view;
+package ui;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -9,7 +9,6 @@ import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
 import org.jxmapviewer.viewer.*;
 import org.jxmapviewer.painter.CompoundPainter;
 import org.jxmapviewer.painter.Painter;
-import view.RoutePainter;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
