@@ -12,25 +12,19 @@ import static org.mockito.Mockito.*;
 public class LambdaServiceTest {
 
     @Test
-    void testGetClosestStations() {
+    void GetClosestStations() {
         //given
         LambdaService mockService = mock(LambdaService.class);
-
         CitiBikeRequest.Location fromLocation = new CitiBikeRequest.Location(40.73061, -73.935242);
         CitiBikeRequest.Location toLocation = new CitiBikeRequest.Location(40.719, -73.9585);
-
         CitiBikeRequest request = new CitiBikeRequest(fromLocation, toLocation);
-
         StationInformation.Station startStation = new StationInformation.Station("1", "Station A", 40.7128, -74.0060);
         StationInformation.Station endStation = new StationInformation.Station("2", "Station B", 40.730610, -73.935242);
-
         CitiBikeResponse mockResponse = new CitiBikeResponse();
         mockResponse.from = fromLocation;
         mockResponse.to = toLocation;
         mockResponse.start = startStation;
         mockResponse.end = endStation;
-
-
         when(mockService.getClosestStations(any(CitiBikeRequest.class))).thenReturn(Single.just(mockResponse));
 
         //when
