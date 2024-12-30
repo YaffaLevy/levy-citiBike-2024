@@ -2,7 +2,6 @@ package ui;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
-import org.jxmapviewer.input.CenterMapListener;
 import org.jxmapviewer.input.PanKeyListener;
 import org.jxmapviewer.input.PanMouseInputListener;
 import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
@@ -13,14 +12,11 @@ import org.jxmapviewer.painter.Painter;
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 
 public class CitiBikeComponent extends JComponent {
     private final JXMapViewer mapViewer;
@@ -51,7 +47,6 @@ public class CitiBikeComponent extends JComponent {
         mapViewer.setZoom(7);
         mapViewer.setAddressLocation(initialPosition);
 
-
         track = new ArrayList<>();
         waypoints = new HashSet<>();
         routePainter = new RoutePainter(track);
@@ -60,30 +55,8 @@ public class CitiBikeComponent extends JComponent {
         MouseInputListener mia = new PanMouseInputListener(mapViewer);
         mapViewer.addMouseListener(mia);
         mapViewer.addMouseMotionListener(mia);
-        mapViewer.addMouseListener(new CenterMapListener(mapViewer));
         mapViewer.addMouseWheelListener(new ZoomMouseWheelListenerCursor(mapViewer));
         mapViewer.addKeyListener(new PanKeyListener(mapViewer));
-
-
-        mapViewer.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                Point2D point = new Point2D.Double(x, y);
-                GeoPosition position = mapViewer.convertPointToGeoPosition(point);
-
-                if (fromPosition == null) {
-                    fromPosition = position;
-                    fromField.setText(position.getLatitude() + ", " + position.getLongitude());
-                    addWaypoint(position);
-                } else if (toPosition == null) {
-                    toPosition = position;
-                    toField.setText(position.getLatitude() + ", " + position.getLongitude());
-                    addWaypoint(position);
-                }
-            }
-        });
 
         setLayout(new BorderLayout());
         add(mapViewer, BorderLayout.CENTER);
@@ -96,7 +69,6 @@ public class CitiBikeComponent extends JComponent {
         List<Painter<JXMapViewer>> painters = List.of(routePainter, waypointPainter);
         CompoundPainter<JXMapViewer> painter = new CompoundPainter<>(painters);
         mapViewer.setOverlayPainter(painter);
-
 
         if (!track.isEmpty()) {
             mapViewer.setZoom(5);
@@ -130,9 +102,7 @@ public class CitiBikeComponent extends JComponent {
             mapViewer.zoomToBestFit(Set.of(fromPosition, startStation, endStation, toPosition), 1.0);
 
             updateMap();
-
         }
-
     }
 
     public void clearMap() {
@@ -145,11 +115,31 @@ public class CitiBikeComponent extends JComponent {
         updateMap();
     }
 
+    public JXMapViewer getMapViewer() {
+        return mapViewer;
+    }
+
+    public JTextField getFromField() {
+        return fromField;
+    }
+
+    public JTextField getToField() {
+        return toField;
+    }
+
     public GeoPosition getFromPosition() {
         return fromPosition;
     }
 
+    public void setFromPosition(GeoPosition position) {
+        this.fromPosition = position;
+    }
+
     public GeoPosition getToPosition() {
         return toPosition;
+    }
+
+    public void setToPosition(GeoPosition position) {
+        this.toPosition = position;
     }
 }

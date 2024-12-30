@@ -9,6 +9,10 @@ import org.jxmapviewer.viewer.GeoPosition;
 import service.LambdaService;
 import service.LambdaServiceFactory;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
+
 public class CitiBikeController {
     private final CitiBikeComponent view;
     private final LambdaService service;
@@ -17,6 +21,26 @@ public class CitiBikeController {
     public CitiBikeController(CitiBikeComponent view) {
         this.view = view;
         this.service = new LambdaServiceFactory().getService(); // Get LambdaService instance
+
+        view.getMapViewer().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+                Point2D point = new Point2D.Double(x, y);
+                GeoPosition position = view.getMapViewer().convertPointToGeoPosition(point);
+
+                if (view.getFromPosition() == null) {
+                    view.setFromPosition(position);
+                    view.getFromField().setText(position.getLatitude() + ", " + position.getLongitude());
+                    view.addWaypoint(position);
+                } else if (view.getToPosition() == null) {
+                    view.setToPosition(position);
+                    view.getToField().setText(position.getLatitude() + ", " + position.getLongitude());
+                    view.addWaypoint(position);
+                }
+            }
+        });
     }
 
     public void calculateRoute() {
