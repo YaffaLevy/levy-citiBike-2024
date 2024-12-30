@@ -21,13 +21,10 @@ public class CitiBikeController {
 
     public void calculateRoute() {
         if (view.getFromPosition() != null && view.getToPosition() != null) {
-            CitiBikeRequest request = new CitiBikeRequest();
-            request.from = new CitiBikeRequest.Location();
-            request.from.lat = view.getFromPosition().getLatitude();
-            request.from.lon = view.getFromPosition().getLongitude();
-            request.to = new CitiBikeRequest.Location();
-            request.to.lat = view.getToPosition().getLatitude();
-            request.to.lon = view.getToPosition().getLongitude();
+            CitiBikeRequest request = new CitiBikeRequest(
+                    new CitiBikeRequest.Location(view.getFromPosition().getLatitude(), view.getFromPosition().getLongitude()),
+                    new CitiBikeRequest.Location(view.getToPosition().getLatitude(), view.getToPosition().getLongitude())
+            );
 
             disposables.add(service.getClosestStations(request)
                     .subscribeOn(Schedulers.io())
