@@ -23,14 +23,8 @@ public class CitiBikeComponent extends JComponent {
     private final List<GeoPosition> track;
     private final Set<Waypoint> waypoints;
     private final RoutePainter routePainter;
-    private final JTextField fromField;
-    private final JTextField toField;
-    private GeoPosition fromPosition;
-    private GeoPosition toPosition;
 
-    public CitiBikeComponent(JTextField fromField, JTextField toField) {
-        this.fromField = fromField;
-        this.toField = toField;
+    public CitiBikeComponent() {
 
         mapViewer = new JXMapViewer();
 
@@ -81,35 +75,20 @@ public class CitiBikeComponent extends JComponent {
         updateMap();
     }
 
-    public void addTrackPoint(GeoPosition position) {
-        track.add(position);
+    public void calculateRoute(GeoPosition startStation, GeoPosition endStation) {
+        track.clear();
+        track.add(startStation);
+        track.add(endStation);
         routePainter.setTrack(track);
+
+        addWaypoint(startStation);
+        addWaypoint(endStation);
+
+        mapViewer.zoomToBestFit(Set.copyOf(track), 1.0);
         updateMap();
     }
 
-    public void calculateRoute(GeoPosition startStation, GeoPosition endStation) {
-        if (fromPosition != null && toPosition != null) {
-            track.clear();
-            track.add(fromPosition);
-            track.add(startStation);
-            track.add(endStation);
-            track.add(toPosition);
-            routePainter.setTrack(track);
-
-            addWaypoint(startStation);
-            addWaypoint(endStation);
-
-            mapViewer.zoomToBestFit(Set.of(fromPosition, startStation, endStation, toPosition), 1.0);
-
-            updateMap();
-        }
-    }
-
     public void clearMap() {
-        fromPosition = null;
-        toPosition = null;
-        fromField.setText("");
-        toField.setText("");
         track.clear();
         waypoints.clear();
         updateMap();
@@ -119,27 +98,4 @@ public class CitiBikeComponent extends JComponent {
         return mapViewer;
     }
 
-    public JTextField getFromField() {
-        return fromField;
-    }
-
-    public JTextField getToField() {
-        return toField;
-    }
-
-    public GeoPosition getFromPosition() {
-        return fromPosition;
-    }
-
-    public void setFromPosition(GeoPosition position) {
-        this.fromPosition = position;
-    }
-
-    public GeoPosition getToPosition() {
-        return toPosition;
-    }
-
-    public void setToPosition(GeoPosition position) {
-        this.toPosition = position;
-    }
 }

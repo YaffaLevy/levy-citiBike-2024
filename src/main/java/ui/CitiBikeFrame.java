@@ -18,8 +18,8 @@ public class CitiBikeFrame extends JFrame {
         fromField = new JTextField(20);
         toField = new JTextField(20);
 
-        mapComponent = new CitiBikeComponent(fromField, toField);
-        controller = new CitiBikeController(mapComponent);
+        mapComponent = new CitiBikeComponent();
+        controller = new CitiBikeController(mapComponent, fromField, toField);
 
         add(mapComponent, BorderLayout.CENTER);
 
