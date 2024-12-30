@@ -46,8 +46,10 @@ public class CitiBikeController {
     public void calculateRoute() {
         if (view.getFromPosition() != null && view.getToPosition() != null) {
             CitiBikeRequest request = new CitiBikeRequest(
-                    new CitiBikeRequest.Location(view.getFromPosition().getLatitude(), view.getFromPosition().getLongitude()),
-                    new CitiBikeRequest.Location(view.getToPosition().getLatitude(), view.getToPosition().getLongitude())
+                    new CitiBikeRequest.Location(view.getFromPosition().getLatitude(),
+                            view.getFromPosition().getLongitude()),
+                    new CitiBikeRequest.Location(view.getToPosition().getLatitude(),
+                            view.getToPosition().getLongitude())
             );
 
             disposables.add(service.getClosestStations(request)

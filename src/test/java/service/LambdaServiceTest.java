@@ -12,7 +12,7 @@ import static org.mockito.Mockito.*;
 public class LambdaServiceTest {
 
     @Test
-    void GetClosestStations() {
+    void getClosestStations() {
         //given
         LambdaService mockService = mock(LambdaService.class);
         CitiBikeRequest.Location fromLocation = new CitiBikeRequest.Location(40.73061, -73.935242);

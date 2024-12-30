@@ -90,6 +90,7 @@ public class RoutePainter implements Painter<JXMapViewer>
         }
     }
     public void setTrack(List<GeoPosition> newTrack) {
+
         this.track = newTrack;
     }
 }
