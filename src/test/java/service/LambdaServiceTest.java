@@ -15,12 +15,7 @@ public class LambdaServiceTest {
     @Test
     void getClosestStation() {
         //given
-        LambdaService service = new Retrofit.Builder()
-                .baseUrl("https://wisgvutuqfkvthmaw7mlwgrk440lzwbo.lambda-url.us-east-2.on.aws/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
-                .build()
-                .create(LambdaService.class);
+        LambdaService service = new LambdaServiceFactory().getService();
 
         CitiBikeRequest.Location fromLocation = new CitiBikeRequest.Location(40.73061, -73.935242);
         CitiBikeRequest.Location toLocation = new CitiBikeRequest.Location(40.719, -73.9585);
