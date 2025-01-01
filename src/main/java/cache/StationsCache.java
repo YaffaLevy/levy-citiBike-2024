@@ -1,10 +1,9 @@
 package cache;
 
-import aws.CitiBikeRequest;
-import aws.CitiBikeResponse;
 import com.google.gson.Gson;
-import service.LambdaService;
-import service.LambdaServiceFactory;
+import model.StationInformation;
+import service.CitiBikeService;
+import service.CitiBikeServiceFactory;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -21,48 +20,44 @@ import java.time.Instant;
 public class StationsCache {
     private static final String BUCKET_NAME = "levy-city";
     private static final String KEY_NAME = "station_information.json";
-    private CitiBikeResponse stations;
+    private StationInformation stations;
     private Instant lastModified;
     private final S3Client s3Client;
-    private final LambdaService service;
+    private final CitiBikeService service;
 
     public StationsCache() {
         this.s3Client = S3Client.builder().region(Region.US_EAST_1).build();
-        this.service = new LambdaServiceFactory().getService();
+        this.service = new CitiBikeServiceFactory().getService();
     }
 
-    public CitiBikeResponse getStations(CitiBikeRequest request) {
+    public StationInformation getStations() {
         if (stations != null && Duration.between(lastModified, Instant.now()).toHours() < 1) {
             return stations;
         }
 
-        if (stations != null && Duration.between(lastModified, Instant.now()).toHours() >= 1) {
-            stations = fetchFromLambda(request);
+        if (stations == null && isS3LastModifiedOverAnHour()) {
+            stations = downloadStationsFromService();
             lastModified = Instant.now();
             uploadStationsToS3(stations);
-            return stations;
+        } else if (stations == null) {
+            stations = readStationsFromS3();
+            lastModified = getS3LastModified();
         }
 
-        if (stations == null) {
-            if (isS3LastModifiedOverAnHour()) {
-                stations = fetchFromLambda(request);
-                lastModified = Instant.now();
-                uploadStationsToS3(stations);
-            } else {
-                stations = readStationsFromS3();
-                lastModified = getS3LastModified();
-            }
-            return stations;
+        if (Duration.between(lastModified, Instant.now()).toHours() >= 1) {
+            stations = downloadStationsFromService();
+            lastModified = Instant.now();
+            uploadStationsToS3(stations);
         }
 
-        return null;
+        return stations;
     }
 
-    private CitiBikeResponse fetchFromLambda(CitiBikeRequest request) {
-        return service.getClosestStations(request).blockingGet();
+    private StationInformation downloadStationsFromService() {
+        return service.getStationInformation().blockingGet();
     }
 
-    private void uploadStationsToS3(CitiBikeResponse stations) {
+    private void uploadStationsToS3(StationInformation stations) {
         Gson gson = new Gson();
         String content = gson.toJson(stations);
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -72,14 +67,14 @@ public class StationsCache {
         s3Client.putObject(putObjectRequest, RequestBody.fromString(content));
     }
 
-    private CitiBikeResponse readStationsFromS3() {
+    private StationInformation readStationsFromS3() {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(BUCKET_NAME)
                 .key(KEY_NAME)
                 .build();
         InputStream in = s3Client.getObject(getObjectRequest);
         Gson gson = new Gson();
-        return gson.fromJson(new InputStreamReader(in), CitiBikeResponse.class);
+        return gson.fromJson(new InputStreamReader(in), StationInformation.class);
     }
 
     private boolean isS3LastModifiedOverAnHour() {
@@ -90,10 +85,9 @@ public class StationsCache {
 
         try {
             HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
-            Instant lastModified = headObjectResponse.lastModified();
-            return Duration.between(lastModified, Instant.now()).toHours() > 0;
+            Instant s3LastModified = headObjectResponse.lastModified();
+            return Duration.between(s3LastModified, Instant.now()).toHours() > 0;
         } catch (Exception e) {
-            // either the file doesn't exist in S3 or you don't have access to it.
             return false;
         }
     }
