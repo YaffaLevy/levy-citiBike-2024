@@ -85,6 +85,7 @@ public class CitiBikeController {
         disposables.clear();
     }
 
+
     public GeoPosition getFromPosition() {
         return fromPosition;
     }
