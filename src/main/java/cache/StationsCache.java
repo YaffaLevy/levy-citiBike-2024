@@ -118,8 +118,8 @@ public class StationsCache {
             return null;
         }
     }
-    public void setLastModified(Instant lastModified) {
 
+    public void setLastModified(Instant lastModified) {
         this.lastModified = lastModified;
     }
 }
