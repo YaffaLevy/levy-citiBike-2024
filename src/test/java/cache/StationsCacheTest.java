@@ -17,7 +17,6 @@ public class StationsCacheTest {
     void getStations() {
         //given
         StationsCache stationsCache = new StationsCache();
-        CitiBikeService service = new CitiBikeServiceFactory().getService();
 
         //when
         StationInformation response = stationsCache.getStations();
@@ -38,13 +37,11 @@ public class StationsCacheTest {
     void getStationsAfterCacheExpiry() {
         //given
         StationsCache stationsCache = new StationsCache();
-        CitiBikeService service = new CitiBikeServiceFactory().getService();
-
-        //when
         StationInformation initialResponse = stationsCache.getStations();
         assertNotNull(initialResponse);
         stationsCache.setLastModified(Instant.now().minus(Duration.ofHours(2)));
 
+        //when
         StationInformation responseAfterExpiry = stationsCache.getStations();
 
         //then
