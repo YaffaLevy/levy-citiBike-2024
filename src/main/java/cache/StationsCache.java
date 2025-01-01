@@ -28,7 +28,7 @@ public class StationsCache {
 
     public StationsCache() {
         this.s3Client = S3Client.builder()
-                .region(Region.US_EAST_1)
+                .region(Region.US_EAST_2)
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
         this.service = new CitiBikeServiceFactory().getService();
