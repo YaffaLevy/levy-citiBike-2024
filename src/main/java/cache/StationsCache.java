@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import model.StationInformation;
 import service.CitiBikeService;
 import service.CitiBikeServiceFactory;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -26,7 +27,10 @@ public class StationsCache {
     private final CitiBikeService service;
 
     public StationsCache() {
-        this.s3Client = S3Client.builder().region(Region.US_EAST_1).build();
+        this.s3Client = S3Client.builder()
+                .region(Region.US_EAST_1)
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .build();
         this.service = new CitiBikeServiceFactory().getService();
     }
 
@@ -58,50 +62,59 @@ public class StationsCache {
     }
 
     private void uploadStationsToS3(StationInformation stations) {
-        Gson gson = new Gson();
-        String content = gson.toJson(stations);
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(KEY_NAME)
-                .build();
-        s3Client.putObject(putObjectRequest, RequestBody.fromString(content));
+        try {
+            Gson gson = new Gson();
+            String content = gson.toJson(stations);
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(KEY_NAME)
+                    .build();
+            s3Client.putObject(putObjectRequest, RequestBody.fromString(content));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private StationInformation readStationsFromS3() {
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(KEY_NAME)
-                .build();
-        InputStream in = s3Client.getObject(getObjectRequest);
-        Gson gson = new Gson();
-        return gson.fromJson(new InputStreamReader(in), StationInformation.class);
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(KEY_NAME)
+                    .build();
+            InputStream in = s3Client.getObject(getObjectRequest);
+            Gson gson = new Gson();
+            return gson.fromJson(new InputStreamReader(in), StationInformation.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new StationInformation(); // Return an empty StationInformation or handle as needed
+        }
     }
 
     private boolean isS3LastModifiedOverAnHour() {
-        HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(KEY_NAME)
-                .build();
-
         try {
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(KEY_NAME)
+                    .build();
             HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
             Instant s3LastModified = headObjectResponse.lastModified();
             return Duration.between(s3LastModified, Instant.now()).toHours() > 0;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
 
     private Instant getS3LastModified() {
-        HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(KEY_NAME)
-                .build();
-
         try {
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(KEY_NAME)
+                    .build();
             HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
             return headObjectResponse.lastModified();
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
