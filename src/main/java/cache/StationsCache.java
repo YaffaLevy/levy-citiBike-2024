@@ -19,7 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 public class StationsCache {
-    private static final String BUCKET_NAME = "levy-city";
+    private static final String BUCKET_NAME = "levy-citi";
     private static final String KEY_NAME = "station_information.json";
     private StationInformation stations;
     private Instant lastModified;
