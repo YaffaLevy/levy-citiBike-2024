@@ -35,7 +35,7 @@ public class StationsCache {
     }
 
     public StationInformation getStations() {
-        if (stations != null && Duration.between(lastModified, Instant.now()).toHours() < 1) {
+        if (stations != null && lastModified != null && Duration.between(lastModified, Instant.now()).toHours() < 1) {
             return stations;
         }
 
@@ -48,7 +48,7 @@ public class StationsCache {
             lastModified = getS3LastModified();
         }
 
-        if (Duration.between(lastModified, Instant.now()).toHours() >= 1) {
+        if (lastModified == null || Duration.between(lastModified, Instant.now()).toHours() >= 1) {
             stations = downloadStationsFromService();
             lastModified = Instant.now();
             uploadStationsToS3(stations);
@@ -86,7 +86,7 @@ public class StationsCache {
             return gson.fromJson(new InputStreamReader(in), StationInformation.class);
         } catch (Exception e) {
             e.printStackTrace();
-            return new StationInformation(); // Return an empty StationInformation or handle as needed
+            return new StationInformation();
         }
     }
 
