@@ -2,12 +2,14 @@ package service;
 
 import aws.CitiBikeRequest;
 import aws.CitiBikeResponse;
+import com.andrewoid.apikeys.ApiKey;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.jxmapviewer.viewer.GeoPosition;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,8 +17,21 @@ import java.util.List;
 
 public class RoutingService {
     private final LambdaService lambdaService = new LambdaServiceFactory().getService();
-    private static final String EXTERNAL_API_KEY = "5b3ce3597851110001cf6248f0f1e1a32a344af0aee1fb9ff05288bc";
-    private static final String EXTERNAL_BASE_URL = "https://api.openrouteservice.org/v2/directions/cycling-regular";
+    ApiKey apiKey = new ApiKey();
+    String keyString = apiKey.get();
+    private static final String EXTERNAL_BASE_URL = "https://api.openrouteservice.org/";
+
+    private final OpenRouteService api;
+
+    public RoutingService() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(EXTERNAL_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(new OkHttpClient())
+                .build();
+
+        api = retrofit.create(OpenRouteService.class);
+    }
 
     public List<GeoPosition> getRoute(GeoPosition from, GeoPosition to, List<GeoPosition> stations) {
         try {
@@ -53,18 +68,16 @@ public class RoutingService {
     }
 
     private List<GeoPosition> getRouteFromExternalAPI(GeoPosition from, GeoPosition to) {
-        OkHttpClient client = new OkHttpClient();
-        String url = String.format("%s?api_key=%s&start=%f,%f&end=%f,%f",
-                EXTERNAL_BASE_URL, EXTERNAL_API_KEY, from.getLongitude(), from.getLatitude(),
-                to.getLongitude(), to.getLatitude());
+        String start = from.getLongitude() + "," + from.getLatitude();
+        String end = to.getLongitude() + "," + to.getLatitude();
+
+        Call<JsonObject> call = api.getRoute(apiKey.get(), start, end);
 
         try {
-            Request request = new Request.Builder().url(url).build();
-            Response response = client.newCall(request).execute();
+            retrofit2.Response<JsonObject> response = call.execute();
 
             if (response.isSuccessful() && response.body() != null) {
-                String json = response.body().string();
-                return parseRoute(json);
+                return parseRoute(response.body().toString());
             } else {
                 throw new IOException("Failed to fetch route from external API: " + response.message());
             }
