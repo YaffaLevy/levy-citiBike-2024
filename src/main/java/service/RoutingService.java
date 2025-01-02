@@ -38,7 +38,7 @@ public class RoutingService {
             return getRouteFromLambda(from, to, stations);
         } catch (Exception e) {
             e.printStackTrace();
-            return getRouteFromExternalAPI(from, to);
+            return getRouteFromExternalApi(from, to);
         }
     }
 
@@ -67,7 +67,7 @@ public class RoutingService {
         return route;
     }
 
-    private List<GeoPosition> getRouteFromExternalAPI(GeoPosition from, GeoPosition to) {
+    private List<GeoPosition> getRouteFromExternalApi(GeoPosition from, GeoPosition to) {
         String start = from.getLongitude() + "," + from.getLatitude();
         String end = to.getLongitude() + "," + to.getLatitude();
 
