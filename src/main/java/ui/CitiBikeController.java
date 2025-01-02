@@ -6,6 +6,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import hu.akarnokd.rxjava3.swing.SwingSchedulers;
 import org.jxmapviewer.viewer.GeoPosition;
+import service.RoutingService;
 import service.LambdaService;
 import service.LambdaServiceFactory;
 
@@ -13,6 +14,7 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.List;
 
 public class CitiBikeController {
     private final CitiBikeComponent view;
@@ -22,7 +24,6 @@ public class CitiBikeController {
     private GeoPosition toPosition;
     private final JTextField fromField;
     private final JTextField toField;
-
 
     public CitiBikeController(CitiBikeComponent view, JTextField fromField, JTextField toField) {
         this.view = view;
@@ -63,17 +64,34 @@ public class CitiBikeController {
                     .subscribeOn(Schedulers.io())
                     .observeOn(SwingSchedulers.edt())
                     .subscribe(
-                            this::handleResponse,
+                            this::handleClosestStationsResponse,
                             Throwable::printStackTrace
                     ));
         }
     }
 
-    private void handleResponse(CitiBikeResponse response) {
-        GeoPosition startGeoPosition = new GeoPosition(response.start.lat, response.start.lon);
-        GeoPosition endGeoPosition = new GeoPosition(response.end.lat, response.end.lon);
+    private void handleClosestStationsResponse(CitiBikeResponse response) {
+        try {
+            RoutingService routingService = new RoutingService();
+            List<GeoPosition> stations = List.of(
+                    new GeoPosition(response.start.lat, response.start.lon),
+                    new GeoPosition(response.end.lat, response.end.lon)
+            );
 
-        view.calculateRoute(startGeoPosition, endGeoPosition);
+            List<GeoPosition> route = routingService.getRoute(
+                    new GeoPosition(response.start.lat, response.start.lon),
+                    new GeoPosition(response.end.lat, response.end.lon),
+                    stations
+            );
+            for (GeoPosition station : stations) {
+                view.addWaypoint(station);
+            }
+
+            view.updateRoute(route, stations);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle error or show a message to the user
+        }
     }
 
     public void clearMap() {
@@ -85,7 +103,6 @@ public class CitiBikeController {
         disposables.clear();
     }
 
-
     public GeoPosition getFromPosition() {
         return fromPosition;
     }
@@ -93,6 +110,7 @@ public class CitiBikeController {
     public GeoPosition getToPosition() {
         return toPosition;
     }
+
     public void setFromPosition(GeoPosition fromPosition) {
         this.fromPosition = fromPosition;
     }
@@ -100,6 +118,7 @@ public class CitiBikeController {
     public void setToPosition(GeoPosition toPosition) {
         this.toPosition = toPosition;
     }
+
     public JTextField getFromField() {
         return fromField;
     }

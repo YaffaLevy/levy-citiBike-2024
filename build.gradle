@@ -35,6 +35,9 @@ dependencies {
     implementation 'com.github.akarnokd:rxjava3-swing:3.1.1'
     implementation 'org.jxmapviewer:jxmapviewer2:2.8'
     implementation 'software.amazon.awssdk:s3:2.20.36'
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
 
 
 }
