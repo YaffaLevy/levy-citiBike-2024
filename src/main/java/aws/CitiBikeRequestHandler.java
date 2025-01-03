@@ -1,5 +1,6 @@
 package aws;
 
+import cache.StationsCache;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -19,10 +20,10 @@ public class CitiBikeRequestHandler implements RequestHandler<APIGatewayProxyReq
         Gson gson = new Gson();
         CitiBikeRequest request = gson.fromJson(body, CitiBikeRequest.class);
 
-
+        StationsCache stationsCache = new StationsCache();
+        StationInformation stationInfo = stationsCache.getStations();
         CitiBikeServiceFactory factory = new CitiBikeServiceFactory();
         CitiBikeService service = factory.getService();
-        StationInformation stationInfo = service.getStationInformation().blockingGet();
         StationStatus stationStatus = service.getStationStatus().blockingGet();
 
 
