@@ -6,7 +6,8 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import hu.akarnokd.rxjava3.swing.SwingSchedulers;
 import org.jxmapviewer.viewer.GeoPosition;
-import service.RoutingService;
+import OpenRoute.RoutingService;
+import service.OpenRouteServiceFactory;
 import service.LambdaService;
 import service.LambdaServiceFactory;
 
@@ -14,11 +15,13 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CitiBikeController {
     private final CitiBikeComponent view;
-    private final LambdaService service;
+    private final LambdaService lambdaService;
+    private final RoutingService routingService;
     private final CompositeDisposable disposables = new CompositeDisposable();
     private GeoPosition fromPosition;
     private GeoPosition toPosition;
@@ -27,9 +30,11 @@ public class CitiBikeController {
 
     public CitiBikeController(CitiBikeComponent view, JTextField fromField, JTextField toField) {
         this.view = view;
-        this.service = new LambdaServiceFactory().getService();
+        this.lambdaService = new LambdaServiceFactory().getService();
+        this.routingService = new OpenRouteServiceFactory().createService();
         this.fromField = fromField;
         this.toField = toField;
+
         view.getMapViewer().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -54,13 +59,11 @@ public class CitiBikeController {
     public void calculateRoute() {
         if (getFromPosition() != null && getToPosition() != null) {
             CitiBikeRequest request = new CitiBikeRequest(
-                    new CitiBikeRequest.Location(getFromPosition().getLatitude(),
-                            getFromPosition().getLongitude()),
-                    new CitiBikeRequest.Location(getToPosition().getLatitude(),
-                            getToPosition().getLongitude())
+                    new CitiBikeRequest.Location(getFromPosition().getLatitude(), getFromPosition().getLongitude()),
+                    new CitiBikeRequest.Location(getToPosition().getLatitude(), getToPosition().getLongitude())
             );
 
-            disposables.add(service.getClosestStations(request)
+            disposables.add(lambdaService.getClosestStations(request)
                     .subscribeOn(Schedulers.io())
                     .observeOn(SwingSchedulers.edt())
                     .subscribe(
@@ -72,25 +75,27 @@ public class CitiBikeController {
 
     private void handleClosestStationsResponse(CitiBikeResponse response) {
         try {
-            RoutingService routingService = new RoutingService();
-            List<GeoPosition> stations = List.of(
-                    new GeoPosition(response.start.lat, response.start.lon),
-                    new GeoPosition(response.end.lat, response.end.lon)
-            );
+            GeoPosition startStation = new GeoPosition(response.start.lat, response.start.lon);
+            GeoPosition endStation = new GeoPosition(response.end.lat, response.end.lon);
 
-            List<GeoPosition> route = routingService.getRoute(
-                    new GeoPosition(response.start.lat, response.start.lon),
-                    new GeoPosition(response.end.lat, response.end.lon),
-                    stations
-            );
-            for (GeoPosition station : stations) {
-                view.addWaypoint(station);
-            }
+            //flatmap is being used to chain more asynchronous opertaions
 
-            view.updateRoute(route, stations);
+            disposables.add(routingService.getRouteFromExternalAPI(getFromPosition(), startStation)
+                    .flatMap(route1 -> routingService.getRouteFromExternalAPI(endStation, getToPosition())
+                            .map(route2 -> {
+                                List<GeoPosition> combinedRoute = new ArrayList<>(route1);
+                                combinedRoute.addAll(route2);
+                                return combinedRoute;
+                            }))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(SwingSchedulers.edt())
+                    .subscribe(
+                            route -> view.updateRoute(route, List.of(getFromPosition(), startStation, endStation, getToPosition())),
+                            Throwable::printStackTrace
+                    ));
         } catch (Exception e) {
             e.printStackTrace();
-            // Handle error or show a message to the user
+            JOptionPane.showMessageDialog(null, "Failed to calculate route. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

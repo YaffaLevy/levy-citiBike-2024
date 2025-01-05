@@ -78,21 +78,14 @@ public class CitiBikeComponent extends JComponent {
             throw new IllegalArgumentException("Route cannot be null or empty.");
         }
 
-        // Clear the existing route and add new route points
         clearRoute();
         track.addAll(route);
         routePainter.setTrack(track);
 
-        // Add waypoints at the start, end, and stations
-        addWaypoint(route.get(0)); // Start point
-        addWaypoint(route.get(route.size() - 1)); // End point
-
-        // Add waypoints for each station
         for (GeoPosition station : stations) {
             addWaypoint(station);
         }
 
-        // Redraw the map
         mapViewer.zoomToBestFit(Set.copyOf(route), 1.0);
         updateMap();
     }
