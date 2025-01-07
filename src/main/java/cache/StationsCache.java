@@ -25,6 +25,7 @@ public class StationsCache {
     private Instant lastModified;
     private final S3Client s3Client;
     private final CitiBikeService service;
+    Gson gson = new Gson();
 
     public StationsCache() {
         this.s3Client = S3Client.builder()
@@ -63,7 +64,6 @@ public class StationsCache {
 
     private void uploadStationsToS3(StationInformation stations) {
         try {
-            Gson gson = new Gson();
             String content = gson.toJson(stations);
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(BUCKET_NAME)
@@ -82,7 +82,6 @@ public class StationsCache {
                     .key(KEY_NAME)
                     .build();
             InputStream in = s3Client.getObject(getObjectRequest);
-            Gson gson = new Gson();
             return gson.fromJson(new InputStreamReader(in), StationInformation.class);
         } catch (Exception e) {
             e.printStackTrace();

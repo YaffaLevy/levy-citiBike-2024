@@ -78,26 +78,35 @@ public class CitiBikeController {
             GeoPosition startStation = new GeoPosition(response.start.lat, response.start.lon);
             GeoPosition endStation = new GeoPosition(response.end.lat, response.end.lon);
 
-            //flatmap is being used to chain more asynchronous opertaions
-
-            disposables.add(routingService.getRouteFromApi(getFromPosition(), startStation)
-                    .flatMap(route1 -> routingService.getRouteFromApi(endStation, getToPosition())
-                            .map(route2 -> {
-                                List<GeoPosition> combinedRoute = new ArrayList<>(route1);
-                                combinedRoute.addAll(route2);
-                                return combinedRoute;
-                            }))
+            // Chain route calculations using flatMap for all segments
+            disposables.add(routingService.getRouteFromApi(getFromPosition(), startStation) // From user start to start station
+                    .flatMap(startToStationRoute -> routingService.getRouteFromApi(startStation, endStation) // Between stations
+                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(endStation, getToPosition()) // From end station to user end
+                                    .map(stationToEndRoute -> {
+                                        List<GeoPosition> fullRoute = new ArrayList<>();
+                                        fullRoute.addAll(startToStationRoute); // Add start to station with bikes
+                                        fullRoute.addAll(stationToStationRoute); // Add station to station route
+                                        fullRoute.addAll(stationToEndRoute); // Add station with docks to end
+                                        return fullRoute;
+                                    })
+                            )
+                    )
                     .subscribeOn(Schedulers.io())
                     .observeOn(SwingSchedulers.edt())
                     .subscribe(
                             route -> view.updateRoute(route, List.of(getFromPosition(), startStation, endStation, getToPosition())),
-                            Throwable::printStackTrace
+                            error -> {
+                                error.printStackTrace();
+                                JOptionPane.showMessageDialog(null, "Failed to calculate route. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
                     ));
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
 
     public void clearMap() {
         fromPosition = null;
