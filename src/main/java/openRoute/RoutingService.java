@@ -1,4 +1,4 @@
-package OpenRoute;
+package openRoute;
 
 import com.andrewoid.apikeys.ApiKey;
 import io.reactivex.rxjava3.core.Single;

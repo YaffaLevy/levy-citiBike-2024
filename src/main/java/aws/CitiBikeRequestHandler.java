@@ -12,6 +12,7 @@ import service.CitiBikeService;
 import service.CitiBikeServiceFactory;
 
 public class CitiBikeRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent, CitiBikeResponse> {
+    StationsCache stationsCache = new StationsCache();
 
     @Override
     public CitiBikeResponse handleRequest(APIGatewayProxyRequestEvent event, Context context) {
@@ -20,7 +21,6 @@ public class CitiBikeRequestHandler implements RequestHandler<APIGatewayProxyReq
         Gson gson = new Gson();
         CitiBikeRequest request = gson.fromJson(body, CitiBikeRequest.class);
 
-        StationsCache stationsCache = new StationsCache();
         StationInformation stationInfo = stationsCache.getStations();
         CitiBikeServiceFactory factory = new CitiBikeServiceFactory();
         CitiBikeService service = factory.getService();

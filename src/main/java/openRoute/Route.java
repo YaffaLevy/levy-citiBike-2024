@@ -1,6 +1,4 @@
-package OpenRoute;
-
-import OpenRoute.GeoPoint;
+package openRoute;
 
 import java.util.List;
 
