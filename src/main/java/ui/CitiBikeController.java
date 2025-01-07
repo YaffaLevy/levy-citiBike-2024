@@ -78,15 +78,18 @@ public class CitiBikeController {
             GeoPosition startStation = new GeoPosition(response.start.lat, response.start.lon);
             GeoPosition endStation = new GeoPosition(response.end.lat, response.end.lon);
 
-            // Chain route calculations using flatMap for all segments
-            disposables.add(routingService.getRouteFromApi(getFromPosition(), startStation) // From user start to start station
-                    .flatMap(startToStationRoute -> routingService.getRouteFromApi(startStation, endStation) // Between stations
-                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(endStation, getToPosition()) // From end station to user end
+
+            disposables.add(routingService.getRouteFromApi(
+                    getFromPosition(), startStation)
+                    .flatMap(startToStationRoute -> routingService.getRouteFromApi(
+                            startStation, endStation)
+                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(
+                                    endStation, getToPosition())
                                     .map(stationToEndRoute -> {
                                         List<GeoPosition> fullRoute = new ArrayList<>();
-                                        fullRoute.addAll(startToStationRoute); // Add start to station with bikes
-                                        fullRoute.addAll(stationToStationRoute); // Add station to station route
-                                        fullRoute.addAll(stationToEndRoute); // Add station with docks to end
+                                        fullRoute.addAll(startToStationRoute);
+                                        fullRoute.addAll(stationToStationRoute);
+                                        fullRoute.addAll(stationToEndRoute);
                                         return fullRoute;
                                     })
                             )
@@ -97,7 +100,7 @@ public class CitiBikeController {
                             route -> view.updateRoute(route, List.of(getFromPosition(), startStation, endStation, getToPosition())),
                             error -> {
                                 error.printStackTrace();
-                                JOptionPane.showMessageDialog(null, "Failed to calculate route. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
                             }
                     ));
         } catch (Exception e) {
@@ -105,7 +108,6 @@ public class CitiBikeController {
             JOptionPane.showMessageDialog(null, "Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
 
     public void clearMap() {
