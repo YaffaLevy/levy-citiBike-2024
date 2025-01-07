@@ -81,7 +81,8 @@ public class CitiBikeController {
 
             disposables.add(routingService.getRouteFromApi(getFromPosition(), startStation)
                     .flatMap(startToStationRoute -> routingService.getRouteFromApi(startStation, endStation)
-                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(endStation, getToPosition())
+                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(
+                                    endStation, getToPosition())
                                     .map(stationToEndRoute -> {
                                         List<GeoPosition> fullRoute = new ArrayList<>();
                                         fullRoute.addAll(startToStationRoute);
@@ -102,7 +103,8 @@ public class CitiBikeController {
                     ));
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Please try again.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
