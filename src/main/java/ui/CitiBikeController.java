@@ -104,8 +104,8 @@ public class CitiBikeController {
                     ));
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Please try again.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
