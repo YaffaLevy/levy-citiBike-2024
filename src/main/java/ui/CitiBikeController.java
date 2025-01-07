@@ -6,6 +6,8 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import hu.akarnokd.rxjava3.swing.SwingSchedulers;
 import org.jxmapviewer.viewer.GeoPosition;
+import route.RoutingService;
+import service.OpenRouteServiceFactory;
 import service.LambdaService;
 import service.LambdaServiceFactory;
 
@@ -13,22 +15,26 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CitiBikeController {
     private final CitiBikeComponent view;
-    private final LambdaService service;
+    private final LambdaService lambdaService;
+    private final RoutingService routingService;
     private final CompositeDisposable disposables = new CompositeDisposable();
     private GeoPosition fromPosition;
     private GeoPosition toPosition;
     private final JTextField fromField;
     private final JTextField toField;
 
-
     public CitiBikeController(CitiBikeComponent view, JTextField fromField, JTextField toField) {
         this.view = view;
-        this.service = new LambdaServiceFactory().getService();
+        this.lambdaService = new LambdaServiceFactory().getService();
+        this.routingService = new OpenRouteServiceFactory().createService();
         this.fromField = fromField;
         this.toField = toField;
+
         view.getMapViewer().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -53,28 +59,57 @@ public class CitiBikeController {
     public void calculateRoute() {
         if (getFromPosition() != null && getToPosition() != null) {
             CitiBikeRequest request = new CitiBikeRequest(
-                    new CitiBikeRequest.Location(getFromPosition().getLatitude(),
-                            getFromPosition().getLongitude()),
-                    new CitiBikeRequest.Location(getToPosition().getLatitude(),
-                            getToPosition().getLongitude())
+                    new CitiBikeRequest.Location(getFromPosition().getLatitude(), getFromPosition().getLongitude()),
+                    new CitiBikeRequest.Location(getToPosition().getLatitude(), getToPosition().getLongitude())
             );
 
-            disposables.add(service.getClosestStations(request)
+            disposables.add(lambdaService.getClosestStations(request)
                     .subscribeOn(Schedulers.io())
                     .observeOn(SwingSchedulers.edt())
                     .subscribe(
-                            this::handleResponse,
+                            this::handleClosestStationsResponse,
                             Throwable::printStackTrace
                     ));
         }
     }
 
-    private void handleResponse(CitiBikeResponse response) {
-        GeoPosition startGeoPosition = new GeoPosition(response.start.lat, response.start.lon);
-        GeoPosition endGeoPosition = new GeoPosition(response.end.lat, response.end.lon);
+    private void handleClosestStationsResponse(CitiBikeResponse response) {
+        try {
+            GeoPosition startStation = new GeoPosition(response.start.lat, response.start.lon);
+            GeoPosition endStation = new GeoPosition(response.end.lat, response.end.lon);
 
-        view.calculateRoute(startGeoPosition, endGeoPosition);
+
+            disposables.add(routingService.getRouteFromApi(getFromPosition(), startStation)
+                    .flatMap(startToStationRoute -> routingService.getRouteFromApi(startStation, endStation)
+                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(
+                                    endStation, getToPosition())
+                                    .map(stationToEndRoute -> {
+                                        List<GeoPosition> fullRoute = new ArrayList<>();
+                                        fullRoute.addAll(startToStationRoute);
+                                        fullRoute.addAll(stationToStationRoute);
+                                        fullRoute.addAll(stationToEndRoute);
+                                        return fullRoute;
+                                    })
+                            )
+                    )
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(SwingSchedulers.edt())
+                    .subscribe(
+                            route -> view.updateRoute(route, List.of(getFromPosition(),
+                                    startStation, endStation, getToPosition())),
+                            error -> {
+                                error.printStackTrace();
+                                JOptionPane.showMessageDialog(null, "Please try again.",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                    ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
+
 
     public void clearMap() {
         fromPosition = null;
@@ -85,7 +120,6 @@ public class CitiBikeController {
         disposables.clear();
     }
 
-
     public GeoPosition getFromPosition() {
         return fromPosition;
     }
@@ -93,6 +127,7 @@ public class CitiBikeController {
     public GeoPosition getToPosition() {
         return toPosition;
     }
+
     public void setFromPosition(GeoPosition fromPosition) {
         this.fromPosition = fromPosition;
     }
@@ -100,6 +135,7 @@ public class CitiBikeController {
     public void setToPosition(GeoPosition toPosition) {
         this.toPosition = toPosition;
     }
+
     public JTextField getFromField() {
         return fromField;
     }

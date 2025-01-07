@@ -12,7 +12,6 @@ import org.jxmapviewer.painter.Painter;
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +24,6 @@ public class CitiBikeComponent extends JComponent {
     private final RoutePainter routePainter;
 
     public CitiBikeComponent() {
-
         mapViewer = new JXMapViewer();
 
         // Create a TileFactoryInfo for OpenStreetMap
@@ -75,27 +73,34 @@ public class CitiBikeComponent extends JComponent {
         updateMap();
     }
 
-    public void calculateRoute(GeoPosition startStation, GeoPosition endStation) {
-        track.clear();
-        track.add(startStation);
-        track.add(endStation);
+    public void updateRoute(List<GeoPosition> route, List<GeoPosition> stations) {
+        if (route == null || route.isEmpty()) {
+            throw new IllegalArgumentException("Route cannot be null or empty.");
+        }
+
+        clearRoute();
+        track.addAll(route);
         routePainter.setTrack(track);
 
-        addWaypoint(startStation);
-        addWaypoint(endStation);
+        for (GeoPosition station : stations) {
+            addWaypoint(station);
+        }
 
-        mapViewer.zoomToBestFit(Set.copyOf(track), 1.0);
+        mapViewer.zoomToBestFit(Set.copyOf(route), 1.0);
         updateMap();
     }
 
-    public void clearMap() {
+    public void clearRoute() {
         track.clear();
         waypoints.clear();
         updateMap();
     }
 
+    public void clearMap() {
+        clearRoute();
+    }
+
     public JXMapViewer getMapViewer() {
         return mapViewer;
     }
-
 }
