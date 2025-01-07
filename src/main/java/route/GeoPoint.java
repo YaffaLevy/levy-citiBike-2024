@@ -1,4 +1,4 @@
-package openRoute;
+package route;
 
 public class GeoPoint {
     private double lat;

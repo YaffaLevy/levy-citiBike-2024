@@ -1,7 +1,7 @@
 package service;
 
 import io.reactivex.rxjava3.core.Single;
-import openRoute.OpenRouteResponse;
+import route.OpenRouteResponse;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 

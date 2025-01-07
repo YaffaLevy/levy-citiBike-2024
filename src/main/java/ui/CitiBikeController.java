@@ -6,7 +6,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import hu.akarnokd.rxjava3.swing.SwingSchedulers;
 import org.jxmapviewer.viewer.GeoPosition;
-import openRoute.RoutingService;
+import route.RoutingService;
 import service.OpenRouteServiceFactory;
 import service.LambdaService;
 import service.LambdaServiceFactory;
