@@ -79,12 +79,9 @@ public class CitiBikeController {
             GeoPosition endStation = new GeoPosition(response.end.lat, response.end.lon);
 
 
-            disposables.add(routingService.getRouteFromApi(
-                    getFromPosition(), startStation)
-                    .flatMap(startToStationRoute -> routingService.getRouteFromApi(
-                            startStation, endStation)
-                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(
-                                    endStation, getToPosition())
+            disposables.add(routingService.getRouteFromApi(getFromPosition(), startStation)
+                    .flatMap(startToStationRoute -> routingService.getRouteFromApi(startStation, endStation)
+                            .flatMap(stationToStationRoute -> routingService.getRouteFromApi(endStation, getToPosition())
                                     .map(stationToEndRoute -> {
                                         List<GeoPosition> fullRoute = new ArrayList<>();
                                         fullRoute.addAll(startToStationRoute);
