@@ -95,7 +95,8 @@ public class CitiBikeController {
                     .subscribeOn(Schedulers.io())
                     .observeOn(SwingSchedulers.edt())
                     .subscribe(
-                            route -> view.updateRoute(route, List.of(getFromPosition(), startStation, endStation, getToPosition())),
+                            route -> view.updateRoute(route, List.of(getFromPosition(),
+                                    startStation, endStation, getToPosition())),
                             error -> {
                                 error.printStackTrace();
                                 JOptionPane.showMessageDialog(null, "Please try again.",
