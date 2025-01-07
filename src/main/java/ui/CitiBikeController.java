@@ -98,7 +98,8 @@ public class CitiBikeController {
                             route -> view.updateRoute(route, List.of(getFromPosition(), startStation, endStation, getToPosition())),
                             error -> {
                                 error.printStackTrace();
-                                JOptionPane.showMessageDialog(null, "Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Please try again.",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
                             }
                     ));
         } catch (Exception e) {
