@@ -18,7 +18,7 @@ public class RoutingService {
         this.apiKey = apiKeyInstance.get();
     }
 
-    public Single<List<GeoPosition>> getRouteFromExternalAPI(GeoPosition from, GeoPosition to) {
+    public Single<List<GeoPosition>> getRouteFromExternalApi(GeoPosition from, GeoPosition to) {
         String start = from.getLongitude() + "," + from.getLatitude();
         String end = to.getLongitude() + "," + to.getLatitude();
 
