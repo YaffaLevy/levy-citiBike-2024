@@ -80,8 +80,8 @@ public class CitiBikeController {
 
             //flatmap is being used to chain more asynchronous opertaions
 
-            disposables.add(routingService.getRouteFromExternalApi(getFromPosition(), startStation)
-                    .flatMap(route1 -> routingService.getRouteFromExternalApi(endStation, getToPosition())
+            disposables.add(routingService.getRouteFromApi(getFromPosition(), startStation)
+                    .flatMap(route1 -> routingService.getRouteFromApi(endStation, getToPosition())
                             .map(route2 -> {
                                 List<GeoPosition> combinedRoute = new ArrayList<>(route1);
                                 combinedRoute.addAll(route2);
